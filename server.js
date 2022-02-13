@@ -3,7 +3,7 @@ var ytdl = require('ytdl-core');
 var url = require('url');
 var fs = require('fs');
 var yturl = require('youtube-url');
-const { connect } = require('http2');
+const { info } = require('console');
 
 
 const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
@@ -15,13 +15,28 @@ http.createServer(async function (req, res) {
 		res.end(fs.readFileSync('index.html'))
 	}
 	else if (q.pathname === '/https://www.youtube.com/watch' || q.pathname === '/www.youtube.com/watch') {
+		res.writeHead(200, { 'Content-Type': 'application/json' });
+
 		const id = q.query.v;
 		const dlpath = 'ytdl/' + id + '.mp4';
 		
-		const videoInfo = ytdl('http://www.youtube.com/watch?v='+ id);
-		console.log(videoInfo);
+		const videoInfo = await ytdl.getInfo('https://www.youtube.com/watch?v=1tbRuLxYzco');
+
+		const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
+		let jsonRes;
+		for (let i = 0; i < formats.length; i++){
+			jsonRes += '{"Quality" : ' + formats[i].qualityLabel + ', "URL" : '+formats[i].url + '}'
+		}
+
+		res.end(jsonRes);
+		// ytdl.getInfo('https://www.youtube.com/watch?v=1tbRuLxYzco').then(info => {
+		// 	console.log(info.videoDetails.title);
+		// });
+		// videoInfo.then(info => {
+		// })
+
 		// var x = ytdl('http://www.youtube.com/watch?v='+ id)
-		await x.pipe(fs.createWriteStream(dlpath));
+		// await x.pipe(fs.createWriteStream(dlpath));
 
 		// /*
 		// 	Dette er ikke optimalt, en bedre måte å gjøre det på
@@ -39,7 +54,6 @@ http.createServer(async function (req, res) {
 
 		// var readStream = fs.createReadStream(dlpath);
 		// await readStream.pipe(res);
-		// res.end();
 
 		// Obs. Filen blir ikke slettet, vanlig at dette
 		// gjøres etterhvert av et annet skript.

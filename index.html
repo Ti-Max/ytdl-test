@@ -1,12 +1,14 @@
 <meta charset="utf-8">
 <h1>YouTube DL</h1>
 <input placeholder="https://www.youtube.com/watch?v=videoid" id="link"></input>
-<button onclick="downloadVideo();">Last ned</button>
-<!-- Her må du trikse med Javascript (ikke nodejs), for å gi følelsen av at nedlastningen har startet.-->
+<button onclick="getVideoInfo();">Last ned</button>
+
 <script>
-    function downloadVideo(){
+    function getVideoInfo(){
         let link = document.getElementById('link').value
-        document.location.replace('/' + link);
-        console.log(link);
+        fetch('/' + link)
+            .then(response => response.json())
+            .then(videoinfo => console.log(videoinfo))
+            .catch(err => console.warn(err));
     }
 </script>
