@@ -2,33 +2,86 @@ var http = require('http');
 var ytdl = require('ytdl-core');
 var url = require('url');
 var fs = require('fs');
-var yturl = require('youtube-url');
-const { info } = require('console');
-
-
-const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
+const { format } = require('path');
 
 http.createServer(async function (req, res) {
 	const q = url.parse(req.url, true);
-	if (req.url == '/') {
+	console.log(q, req.url);
+	if (req.url === '/') {
 		res.writeHead(200, { 'Content-Type': 'text/html' });
 		res.end(fs.readFileSync('index.html'))
 	}
-	else if (q.pathname === '/https://www.youtube.com/watch' || q.pathname === '/www.youtube.com/watch') {
-		res.writeHead(200, { 'Content-Type': 'application/json' });
-
+	else if(req.url === '/getInfo'){
 		const id = q.query.v;
-		const dlpath = 'ytdl/' + id + '.mp4';
-		
-		const videoInfo = await ytdl.getInfo('https://www.youtube.com/watch?v=1tbRuLxYzco');
+		const videoInfo = await ytdl.getInfo(id);
 
 		const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
-		let jsonRes;
+		
+		let jsonRes = {Options : []};
 		for (let i = 0; i < formats.length; i++){
-			jsonRes += '{"Quality" : ' + formats[i].qualityLabel + ', "URL" : '+formats[i].url + '}'
+			jsonRes.Options.push({
+				'QualityLabel' : formats[i].qualityLabel,
+				'URL' : formats[i].url
+			})
 		}
+		console.log(formats.length);
+		const json = JSON.parse(jsonRes); 
+		console.log();
+		stream.
+		res.end(JSON.stringify(jsonRes));
+	}
+	else if (true) {
+		// res.writeHead(200, { 'Content-Type': 'application/json' });
+        // res.writeHead(200, "Content-Disposition", `attachment;  filename=video.mp4`);
+		// const stream = fs.createReadStream('./video.mp4');
+		const videoInfo = await ytdl.getInfo('http://www.youtube.com/watch?v=aqz-KE-bpKQ');
+		const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
+		const stream = ytdl('http://www.youtube.com/watch?v=aqz-KE-bpKQ',{format: formats[0]});
 
-		res.end(jsonRes);
+		// const { size } = fs.statSync('./video.mp4');
+		res.writeHead(200, {
+			'Content-Type': 'video/mp4',
+			'Content-Disposition': 'attachment; filename="video.mp4"'
+			// 'Content-Length': size
+		});
+		stream.pipe(res);
+		// console.log(size);
+		// res.writeHead(206, {
+		// 	'Transfer-Encoding': 'chunked',
+		// 	'Content-Type': 'video/mp4',
+		// 	'Content-Length': size,
+		// 	'Content-Disposition': 'attachment; filename=your_file_name'
+		// });
+		// res.on('data', (chunk) => {
+		// 	stream.write(chunk);
+		//   });
+		  
+		//   res.on('end', () => {
+		// 	stream.end();
+		//   });
+
+		// console.log(res);
+		// res.end();
+		// const id = q.query.v;
+		// const dlpath = 'ytdl/' + id + '.mp4';
+		
+		// const videoInfo = await ytdl.getInfo(id);
+
+		// const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
+		
+		// let jsonRes = {Options : []};
+		// for (let i = 0; i < formats.length; i++){
+		// 	jsonRes.Options.push({
+		// 		'QualityLabel' : formats[i].qualityLabel,
+		// 		'URL' : formats[i].url
+		// 	})
+		// }
+		// console.log(formats.length);
+		// const json = JSON.parse(jsonRes); 
+		// console.log();
+		// stream.
+		// res.end(JSON.stringify(jsonRes));
+		// res.end();
 		// ytdl.getInfo('https://www.youtube.com/watch?v=1tbRuLxYzco').then(info => {
 		// 	console.log(info.videoDetails.title);
 		// });
@@ -77,35 +130,4 @@ http.createServer(async function (req, res) {
 	}
 
 }).listen(8080);
-
-
-// var http = require('http');
-// var url = require('url');
-// var fs = require('fs');
-
-// http.createServer(function (req, res) {
-// 	res.writeHead(200, {'Content-Type': 'text/html'});
-// 	let q = url.parse(req.url, true);
-
-// 	if(req.url === '/'){
-// 		let homePage = fs.readFileSync('./index.html');
-		
-// 		res.end(homePage);
-// 	}
-// 	// else if(){
-
-// 	// }
-// 	else{
-// 		var filename = "." + q.pathname;
-// 		fs.readFile(filename, function(err, data) {
-// 		if (err) {
-// 		  	res.writeHead(404, {'Content-Type': 'text/html'});
-// 		  	return res.end("404 Not Found");
-// 		}
-// 		res.writeHead(200, {'Content-Type': 'text/html'});
-// 		res.write(data);
-// 		return res.end();
-// 	});
-// 	}
-	
-// }).listen(8080);
+console.log('Server running at http://localhost:8080');
