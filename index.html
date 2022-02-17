@@ -8,7 +8,6 @@
     <title>YouTube DL</title>
 </head>
 <body>
-    <a title="video format: 720" class="link link-download subname ga_track_events" download="Big Buck Bunny 60fps 4K - Official Blender Foundation Short Film.mp4" data-quality="720" data-type="mp4" href="https://rr2---sn-5hne6nsr.googlevideo.com/videoplayback?expire=1644940610&amp;ei=4ngLYpjlCuvZx_APm7eBwAc&amp;ip=37.120.218.115&amp;id=o-AGhjLY1gpnmgs18sotgYkwhagNqfFfSwiwmizreQTWr9&amp;itag=22&amp;source=youtube&amp;requiressl=yes&amp;mh=aP&amp;mm=31%2C26&amp;mn=sn-5hne6nsr%2Csn-aigzrn7k&amp;ms=au%2Conr&amp;mv=m&amp;mvi=2&amp;pl=24&amp;initcwndbps=762500&amp;vprv=1&amp;mime=video%2Fmp4&amp;ns=glFwd_V8QOMeC1gNbAmVNM0G&amp;cnr=14&amp;ratebypass=yes&amp;dur=634.624&amp;lmt=1613622169658870&amp;mt=1644918779&amp;fvip=2&amp;fexp=24001373%2C24007246&amp;c=WEB&amp;txp=5432432&amp;n=x9S6lC5duzzkow&amp;sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cvprv%2Cmime%2Cns%2Ccnr%2Cratebypass%2Cdur%2Clmt&amp;sig=AOq0QJ8wRQIhAOJVg8u0N6OSjbgZh-InglEIDlKpA9A_MhPoshxPTt20AiB78YiOFvGUsFIDJcBQgTztek4sIwDoJ_rtYZ6PuM3SLA%3D%3D&amp;lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&amp;lsig=AG3C_xAwRAIgc3BLKZsIOBa70_3YVQFlFdCkLOAMLJhvxA00qbHskIsCICpJjn-dyG7oGTGpn6jvoK87zxXvArwXaSMUCtdHW8Wy&amp;title=Big%20Buck%20Bunny%2060fps%204K%20-%20Official%20Blender%20Foundation%20Short%20Film" data-ga-event="send;event;result;click;101">MP4 <span class="subname">720</span></a>
       <input placeholder="https://www.youtube.com/watch?v=videoid" id="link"></input>
     <button onclick="getVideoInfo();">Last ned</button>
   <div id="links"></div>
@@ -16,29 +15,20 @@
     function getVideoInfo(){
         let link = document.getElementById('link').value;
         // document.location.href = '/getInfo/' + link;
-        // await fetch('/getInfo/' + link, {allowHTTP1ForStreamingUpload : true});
-        var xhttp = new XMLHttpRequest();
-        xhttp.open("GET", '/getInfo/' + link, true);
-        xhttp.send();
-            // then(response => console.log(response));
-            // .then(response => response.json())
-            // .then(videoinfo => {
-            //     // console.log(videoinfo);
-            //     // for(let i = 0;i < videoinfo.Options.length; i++){
-            //     //     const option = document.createElement('div');
-            //     //     document.getElementById('links').appendChild(option);
-            //     //     const url = document.createElement('a');
-            //     //     option.appendChild(url);
-            //     //     const urlText = document.createTextNode('Download '+ videoinfo.Options[i].QualityLabel);
-            //     //     url.appendChild(urlText);
-            //     //     url.href = videoinfo.Options[i].URL;
-            //     //     url.download = 'eeee';
-            //     //     url.type="video/mp4"
-            //     //     console.log(videoinfo)   
-            //     // }
-            //     // document.appendChild(links)
-            // })
-            // .catch(err => console.warn(err));
+        fetch('/getInfo/' + link)
+            .then(response => response.json())
+            .then(videoinfo => {
+                console.log(videoinfo);
+                for(let i = 0;i < videoinfo.Options.length; i++){
+                    const option = document.createElement('div');
+                    document.getElementById('links').appendChild(option);
+                    const url = document.createElement('a');
+                    option.appendChild(url);
+                    url.innerHTML = 'Download '+ videoinfo.Options[i].QualityLabel;
+                    // url.href = '/download?v=' + videoinfo.id + '&itag=' + videoinfo.Options[i].itag;
+                }
+            })
+            .catch(err => console.warn(err));
     }
 </script>
 </body>

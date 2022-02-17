@@ -6,37 +6,36 @@ const { format } = require('path');
 
 http.createServer(async function (req, res) {
 	const q = url.parse(req.url, true);
-	console.log(q, req.url);
+	// console.log(q, req.url);
 	if (req.url === '/') {
 		res.writeHead(200, { 'Content-Type': 'text/html' });
 		res.end(fs.readFileSync('index.html'))
 	}
-	else if(req.url === '/getInfo'){
+	else if(q.pathname === '/getInfo/https://www.youtube.com/watch'|| q.pathname === '/getInfo/www.youtube.com/watch'){
 		const id = q.query.v;
-		const videoInfo = await ytdl.getInfo(id);
-
+		const videoInfo = await ytdl.getBasicInfo(id);
 		const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
-		
-		let jsonRes = {Options : []};
+
+		console.log(formats);
+		let resVideoInfo = {id : id, Options : []};
 		for (let i = 0; i < formats.length; i++){
-			jsonRes.Options.push({
+			resVideoInfo.Options.push({
 				'QualityLabel' : formats[i].qualityLabel,
-				'URL' : formats[i].url
-			})
+				// 'size' : formats[i].contentLength,
+				// 'itag' :  formats[i].itag
+			});
 		}
-		console.log(formats.length);
-		const json = JSON.parse(jsonRes); 
-		console.log();
-		stream.
-		res.end(JSON.stringify(jsonRes));
+
+		res.writeHead(200, { 'Content-Type': 'application/json' });
+		res.end(JSON.stringify(resVideoInfo));
 	}
-	else if (true) {
+	else if (false) {
 		// res.writeHead(200, { 'Content-Type': 'application/json' });
         // res.writeHead(200, "Content-Disposition", `attachment;  filename=video.mp4`);
 		// const stream = fs.createReadStream('./video.mp4');
 		const videoInfo = await ytdl.getInfo('http://www.youtube.com/watch?v=aqz-KE-bpKQ');
-		const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
-		const stream = ytdl('http://www.youtube.com/watch?v=aqz-KE-bpKQ',{format: formats[0]});
+		// const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
+		const stream = ytdl('https://www.youtube.com/watch?v=G6sEK2_wGcQ');
 
 		// const { size } = fs.statSync('./video.mp4');
 		res.writeHead(200, {
@@ -44,7 +43,9 @@ http.createServer(async function (req, res) {
 			'Content-Disposition': 'attachment; filename="video.mp4"'
 			// 'Content-Length': size
 		});
+		// res.end();
 		stream.pipe(res);
+		console.log("doine");
 		// console.log(size);
 		// res.writeHead(206, {
 		// 	'Transfer-Encoding': 'chunked',
