@@ -25,7 +25,7 @@
                     const url = document.createElement('a');
                     option.appendChild(url);
                     url.innerHTML = 'Download '+ videoinfo.Options[i].QualityLabel;
-                    // url.href = '/download?v=' + videoinfo.id + '&itag=' + videoinfo.Options[i].itag;
+                    url.href = '/download?v=' + videoinfo.id + '&quality=' + videoinfo.Options[i].QualityLabel;
                 }
             })
             .catch(err => console.warn(err));

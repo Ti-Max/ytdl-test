@@ -2,9 +2,10 @@ var http = require('http');
 var ytdl = require('ytdl-core');
 var url = require('url');
 var fs = require('fs');
-const { format } = require('path');
+var pathToFfmpeg = require('ffmpeg-static');
 
 http.createServer(async function (req, res) {
+	console.log(pathToFfmpeg);
 	const q = url.parse(req.url, true);
 	// console.log(q, req.url);
 	if (req.url === '/') {
@@ -13,111 +14,54 @@ http.createServer(async function (req, res) {
 	}
 	else if(q.pathname === '/getInfo/https://www.youtube.com/watch'|| q.pathname === '/getInfo/www.youtube.com/watch'){
 		const id = q.query.v;
-		const videoInfo = await ytdl.getBasicInfo(id);
-		const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
+		if(id !== undefined){
+			const videoInfo = await ytdl.getBasicInfo(id);
 
-		console.log(formats);
-		let resVideoInfo = {id : id, Options : []};
-		for (let i = 0; i < formats.length; i++){
-			resVideoInfo.Options.push({
-				'QualityLabel' : formats[i].qualityLabel,
-				// 'size' : formats[i].contentLength,
-				// 'itag' :  formats[i].itag
-			});
+			const formats = videoInfo.player_response.streamingData.formats;
+			let resVideoInfo = {id : id, Options : []};
+			for (let i = 0; i < formats.length; i++){
+				resVideoInfo.Options.push({
+					'QualityLabel' : formats[i].qualityLabel,
+					'size' : formats[i].contentLength
+				});
+			}
+			// console.log();
+			res.writeHead(200, { 'Content-Type': 'application/json' });
+			res.end(JSON.stringify(resVideoInfo));
 		}
-
-		res.writeHead(200, { 'Content-Type': 'application/json' });
-		res.end(JSON.stringify(resVideoInfo));
 	}
-	else if (false) {
-		// res.writeHead(200, { 'Content-Type': 'application/json' });
-        // res.writeHead(200, "Content-Disposition", `attachment;  filename=video.mp4`);
-		// const stream = fs.createReadStream('./video.mp4');
-		const videoInfo = await ytdl.getInfo('http://www.youtube.com/watch?v=aqz-KE-bpKQ');
-		// const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
-		const stream = ytdl('https://www.youtube.com/watch?v=G6sEK2_wGcQ');
-
-		// const { size } = fs.statSync('./video.mp4');
-		res.writeHead(200, {
-			'Content-Type': 'video/mp4',
-			'Content-Disposition': 'attachment; filename="video.mp4"'
-			// 'Content-Length': size
-		});
-		// res.end();
-		stream.pipe(res);
-		console.log("doine");
-		// console.log(size);
-		// res.writeHead(206, {
-		// 	'Transfer-Encoding': 'chunked',
-		// 	'Content-Type': 'video/mp4',
-		// 	'Content-Length': size,
-		// 	'Content-Disposition': 'attachment; filename=your_file_name'
-		// });
-		// res.on('data', (chunk) => {
-		// 	stream.write(chunk);
-		//   });
-		  
-		//   res.on('end', () => {
-		// 	stream.end();
-		//   });
-
-		// console.log(res);
-		// res.end();
-		// const id = q.query.v;
-		// const dlpath = 'ytdl/' + id + '.mp4';
+	else if (q.pathname === '/download' && q.query.v !== undefined && q.query.quality !== undefined) {
 		
-		// const videoInfo = await ytdl.getInfo(id);
+		//If format with audio and video choosen
+		if(q.query.quality === '360p' || q.query.quality === '720p'){
+			const videoInfo = await ytdl.getInfo(q.query.v);
+			// const format = ytdl.chooseFormat(videoInfo.formats, {filter: (format) => {
+			// 	return format.qualityLabel === q.query.quality && format.itag === 22;
+			// }});
+			// console.log(format);
+			let formatId = 0;
+			for (let i = 0; i < videoInfo.formats.length; i++) {
+				if (videoInfo.formats[i].qualityLabel === q.query.quality && videoInfo.formats[i].hasAudio){
+					formatId = i;
+					break;	
+				}
+			}
+			console.log(videoInfo.formats);
+			const stream = ytdl.downloadFromInfo(videoInfo, {format : videoInfo.formats[formatId]});
+			res.writeHead(200, {
+				'Content-Type': 'video/mp4',
+				'Content-Disposition': 'attachment; filename="video.mp4"',
+				// 'Content-Length': videoInfo.formats[formatId].contentLength
+			});
+			stream.pipe(res);
+		}
+		else{
 
-		// const formats = ytdl.filterFormats(videoInfo.formats, 'audioandvideo');
-		
-		// let jsonRes = {Options : []};
-		// for (let i = 0; i < formats.length; i++){
-		// 	jsonRes.Options.push({
-		// 		'QualityLabel' : formats[i].qualityLabel,
-		// 		'URL' : formats[i].url
-		// 	})
-		// }
-		// console.log(formats.length);
-		// const json = JSON.parse(jsonRes); 
-		// console.log();
-		// stream.
-		// res.end(JSON.stringify(jsonRes));
-		// res.end();
-		// ytdl.getInfo('https://www.youtube.com/watch?v=1tbRuLxYzco').then(info => {
-		// 	console.log(info.videoDetails.title);
-		// });
-		// videoInfo.then(info => {
-		// })
-
-		// var x = ytdl('http://www.youtube.com/watch?v='+ id)
-		// await x.pipe(fs.createWriteStream(dlpath));
-
-		// /*
-		// 	Dette er ikke optimalt, en bedre måte å gjøre det på
-		// 	er å vente til fs.createWriteStream(dlpath)); er ferdig. */
-		// 	await sleep(10000);
-		// /*
-		// 	Jeg klarte ikke å få det til :) */
-
-		// var stat = fs.statSync(dlpath);
-		// res.writeHead(200, {
-		// 	'Content-Type': 'video/mp4',
-		// 	'Content-Disposition': 'attachment; filename="video.mp4"',
-		// 	'Content-Length': stat.size
-		// });
-
-		// var readStream = fs.createReadStream(dlpath);
-		// await readStream.pipe(res);
-
-		// Obs. Filen blir ikke slettet, vanlig at dette
-		// gjøres etterhvert av et annet skript.
+		}
 	}
 
-	/*
-		Hvis lenke ikke er /ytdl/<id> eller / (hjemmeside), last inn /<side>.html
-	*/
 	else {
-		// Tatt fra https://www.w3schools.com/nodejs/nodejs_url.asp
+
 	  var filename = "." + q.pathname;
 	  fs.readFile(filename, function(err, data) {
 	    if (err) {
