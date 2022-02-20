@@ -1,6 +1,1 @@
-[timofei]
-path = /home/pi/shared
-writeable=Yes
-create mask=0777
-directory mask=0777
-public=no
+Det fungerer nesten med 720p, men videoen har ikke slutt når den blir lastet ned. Hadde ikke nok tid for å fikse det. 

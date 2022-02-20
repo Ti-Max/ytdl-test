@@ -24,8 +24,9 @@
                     document.getElementById('links').appendChild(option);
                     const url = document.createElement('a');
                     option.appendChild(url);
-                    url.innerHTML = 'Download '+ videoinfo.Options[i].QualityLabel;
+                    url.innerHTML = 'Download '+ videoinfo.Options[i].QualityLabel + ' ' + (videoinfo.Options[i].size / 1000000).toFixed(1) + ' mb';
                     url.href = '/download?v=' + videoinfo.id + '&quality=' + videoinfo.Options[i].QualityLabel;
+
                 }
             })
             .catch(err => console.warn(err));
